@@ -3,30 +3,44 @@
 import React from 'react';
 
 interface InfiniteScrollLoaderProps {
-  loading: boolean;
+  isLoading: boolean;
   hasMore: boolean;
+  totalResults: number;
 }
 
-const InfiniteScrollLoader = React.forwardRef<HTMLDivElement, InfiniteScrollLoaderProps>(
-  ({ loading, hasMore }, ref) => {
-    if (!hasMore && !loading) return null;
-
-    return (
-      <div ref={ref} className="flex justify-center py-6">
-        {loading && (
-          <div
-            className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
-            role="status"
-            aria-label="Loading more results"
-          >
-            <span className="sr-only">Loading more results...</span>
-          </div>
-        )}
-      </div>
-    );
+export default function InfiniteScrollLoader({
+  isLoading,
+  hasMore,
+  totalResults,
+}: InfiniteScrollLoaderProps) {
+  if (!hasMore && totalResults === 0) {
+    return null;
   }
-);
 
-InfiniteScrollLoader.displayName = 'InfiniteScrollLoader';
+  return (
+    <div className="flex justify-center items-center py-8">
+      {isLoading && (
+        <div className="flex flex-col items-center gap-3">
+          {/* Spinner */}
+          <div className="relative w-10 h-10">
+            <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 border-r-blue-500 animate-spin"></div>
+          </div>
+          <p className="text-gray-600 text-sm font-medium">Loading more results...</p>
+        </div>
+      )}
 
-export default InfiniteScrollLoader;
+      {!isLoading && !hasMore && totalResults > 0 && (
+        <div className="text-center">
+          <p className="text-gray-500 text-sm">✓ No more results to load</p>
+        </div>
+      )}
+
+      {!isLoading && !hasMore && totalResults === 0 && (
+        <div className="text-center">
+          <p className="text-gray-400 text-sm">No results found</p>
+        </div>
+      )}
+    </div>
+  );
+}

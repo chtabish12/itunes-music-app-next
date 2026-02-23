@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useCallback, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   selectSearchResults,
@@ -8,9 +8,11 @@ import {
   selectSearchError,
   selectSearchQuery,
   selectSearchHasMore,
+  selectTotalResults,
   fetchMoreResults,
 } from '@/lib/redux/searchSlice';
 import ResultCard from './ResultCard';
+import InfiniteScrollLoader from './InfiniteScrollLoader';
 
 export default function ResultsList() {
   const results = useAppSelector(selectSearchResults);
@@ -18,6 +20,7 @@ export default function ResultsList() {
   const error = useAppSelector(selectSearchError);
   const query = useAppSelector(selectSearchQuery);
   const hasMore = useAppSelector(selectSearchHasMore);
+  const totalResults = useAppSelector(selectTotalResults);
   const dispatch = useAppDispatch();
 
   const observerTarget = useRef<HTMLDivElement>(null);
@@ -27,7 +30,7 @@ export default function ResultsList() {
   const loadMore = useCallback(() => {
     if (!isLoadingMore.current && hasMore && query && !loading) {
       isLoadingMore.current = true;
-      lastScrollY.current = window.scrollY; // Save scroll position
+      lastScrollY.current = window.scrollY;
       
       console.log('🔄 Triggering load more at scroll:', lastScrollY.current);
       
@@ -38,7 +41,6 @@ export default function ResultsList() {
         }) as any
       ).finally(() => {
         isLoadingMore.current = false;
-        // Restore scroll position after render
         setTimeout(() => {
           window.scrollTo(0, lastScrollY.current);
         }, 50);
@@ -53,7 +55,7 @@ export default function ResultsList() {
           loadMore();
         }
       },
-      { threshold: 0.1, rootMargin: '100px' }
+      { threshold: 0.1, rootMargin: '200px' } // Trigger 200px before reaching bottom
     );
 
     if (observerTarget.current) {
@@ -68,7 +70,12 @@ export default function ResultsList() {
   }, [loadMore, loading, hasMore]);
 
   if (error) {
-    return <div className="text-red-500">Error: {error}</div>;
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-500 text-lg font-semibold">❌ Error</div>
+        <p className="text-red-400 text-sm mt-2">{error}</p>
+      </div>
+    );
   }
 
   return (
@@ -82,14 +89,13 @@ export default function ResultsList() {
         ))}
       </div>
 
-      {/* Infinite scroll trigger */}
-      <div ref={observerTarget} className="py-8 text-center w-full">
-        {loading && (
-          <div className="text-gray-600 text-lg">⏳ Loading more results...</div>
-        )}
-        {!loading && !hasMore && results.length > 0 && (
-          <div className="text-gray-500 text-sm">✅ No more results</div>
-        )}
+      {/* Infinite scroll trigger - observer target */}
+      <div ref={observerTarget} className="w-full mt-8">
+        <InfiniteScrollLoader
+          isLoading={loading}
+          hasMore={hasMore}
+          totalResults={totalResults}
+        />
       </div>
     </>
   );

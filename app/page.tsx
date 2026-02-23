@@ -35,10 +35,10 @@ export default function Home() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6">
-          {loading && <LoadingSpinner />}
-          {error && <ErrorMessage message={error} />}
-          {!loading && !error && results.length === 0 && <EmptyState />}
-          {!loading && !error && results.length > 0 && <ResultsList />}
+          {loading && results.length === 0 && <LoadingSpinner />}
+          {error && results.length === 0 && <ErrorMessage message={error} />}
+          {!loading && results.length === 0 && <EmptyState />}
+          {results.length > 0 && <ResultsList />}
         </div>
       </div>
     </main>
