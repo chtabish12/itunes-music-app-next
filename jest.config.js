@@ -1,28 +1,28 @@
-const nextJest = require('next/jest');
+const nextJest = require('next/jest')
 
 const createJestConfig = nextJest({
   dir: './',
-});
+})
 
-const config = {
-  testEnvironment: 'jsdom',
+const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
-    '^.+\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
+  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
   collectCoverageFrom: [
-    '**/*.{js,jsx,ts,tsx}',
+    'app/**/*.{js,jsx,ts,tsx}',
+    'components/**/*.{js,jsx,ts,tsx}',
+    'lib/**/*.{js,jsx,ts,tsx}',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/.next/**',
     '!**/coverage/**',
-    '!jest.config.js',
-    '!next.config.js',
-    '!postcss.config.js',
-    '!tailwind.config.js',
   ],
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
-};
+  testMatch: [
+    '**/__tests__/**/*.test.[jt]s?(x)',
+  ],
+}
 
-module.exports = createJestConfig(config);
+module.exports = createJestConfig(customJestConfig)

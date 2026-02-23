@@ -1,38 +1,120 @@
-// __tests__/components/SearchForm.test.tsx
-
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import SearchForm from '../../components/SearchForm';
-import searchReducer from '../../lib/redux/searchSlice';
-
-function renderWithStore(ui: React.ReactElement) {
-  const store = configureStore({ reducer: { search: searchReducer } });
-  return render(<Provider store={store}>{ui}</Provider>);
-}
+import searchReducer from '@/lib/redux/searchSlice';
+import SearchForm from '@/components/SearchForm';
 
 describe('SearchForm Component', () => {
-  test('renders SearchForm component', () => {
-    renderWithStore(<SearchForm />);
-    expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
+  let store: ReturnType<typeof configureStore>;
+
+  beforeEach(() => {
+    store = configureStore({
+      reducer: { search: searchReducer },
+    });
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ results: [], resultCount: 0 }),
+      })
+    ) as jest.Mock;
   });
 
-  test('allows user to input search term', () => {
-    renderWithStore(<SearchForm />);
-    const input = screen.getByPlaceholderText(/search/i) as HTMLInputElement;
-    fireEvent.change(input, { target: { value: 'test' } });
-    expect(input.value).toBe('test');
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  test('calls onSubmit prop when form is submitted', () => {
-    const handleSubmit = jest.fn();
-    renderWithStore(<SearchForm onSubmit={handleSubmit} />);
-    const input = screen.getByPlaceholderText(/search/i);
-    fireEvent.change(input, { target: { value: 'test' } });
-    fireEvent.submit(screen.getByRole('search').querySelector('form')!);
-    expect(handleSubmit).toHaveBeenCalledWith('test');
+  it('should render search input and button', () => {
+    render(
+      <Provider store={store}>
+        <SearchForm />
+      </Provider>
+    );
+
+    const input = screen.getByPlaceholderText(/search for/i);
+    const button = screen.getByRole('button', { name: /search/i });
+
+    expect(input).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
   });
 
-  // Add more tests as required for other functionalities of SearchForm
+  it('should update input value on user type', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Provider store={store}>
+        <SearchForm />
+      </Provider>
+    );
+
+    const input = screen.getByPlaceholderText(/search for/i) as HTMLInputElement;
+    await user.type(input, 'taylor swift');
+
+    expect(input.value).toBe('taylor swift');
+  });
+
+  it('should handle search submission', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Provider store={store}>
+        <SearchForm />
+      </Provider>
+    );
+
+    const input = screen.getByPlaceholderText(/search for/i);
+    const button = screen.getByRole('button', { name: /search/i });
+
+    await user.type(input, 'taylor');
+    await user.click(button);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalled();
+    });
+  });
+
+  it('should not submit empty search', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Provider store={store}>
+        <SearchForm />
+      </Provider>
+    );
+
+    const button = screen.getByRole('button', { name: /search/i });
+    await user.click(button);
+
+    // Fetch should not be called with empty input
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('should submit on Enter key press', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <Provider store={store}>
+        <SearchForm />
+      </Provider>
+    );
+
+    const input = screen.getByPlaceholderText(/search for/i);
+    await user.type(input, 'taylor{Enter}');
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalled();
+    });
+  });
+
+  it('should have search button type submit', () => {
+    render(
+      <Provider store={store}>
+        <SearchForm />
+      </Provider>
+    );
+
+    const button = screen.getByRole('button', { name: /search/i });
+    expect(button).toHaveAttribute('type', 'submit');
+  });
 });
