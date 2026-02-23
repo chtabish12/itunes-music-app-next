@@ -5,6 +5,9 @@ describe('searchSlice', () => {
         results: [],
         loading: false,
         error: null,
+        query: '',
+        offset: 0,
+        hasMore: false,
     };
 
     it('should return initial state', () => {

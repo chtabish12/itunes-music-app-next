@@ -1,7 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 class iTunesApiClient {
-    constructor(baseURL) {
+    private client: AxiosInstance;
+
+    constructor(baseURL: string) {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -10,7 +12,7 @@ class iTunesApiClient {
         });
     }
 
-    async search(term, entity = 'musicTrack') {
+    async search(term: string, entity = 'musicTrack') {
         try {
             const response = await this.client.get('/search', { params: { term, entity }});
             return response.data;
@@ -23,4 +25,5 @@ class iTunesApiClient {
     // Add more methods as needed for other iTunes API endpoints.
 }
 
-export default new iTunesApiClient('https://itunes.apple.com');
+const itunesApiClient = new iTunesApiClient('https://itunes.apple.com');
+export default itunesApiClient;
