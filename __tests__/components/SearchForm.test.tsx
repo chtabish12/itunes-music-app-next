@@ -4,6 +4,11 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import SearchForm from '../../components/SearchForm'; // Adjust the path if necessary.
 
+jest.mock('../../lib/redux/hooks', () => ({
+  useAppDispatch: () => jest.fn(),
+  useAppSelector: jest.fn(),
+}));
+
 describe('SearchForm Component', () => {
   test('renders SearchForm component', () => {
     render(<SearchForm />);

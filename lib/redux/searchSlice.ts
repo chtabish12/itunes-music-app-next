@@ -12,12 +12,14 @@ interface SearchResult {
 }
 
 interface SearchState {
+    query: string;
     results: SearchResult[];
     loading: boolean;
     error: string | null;
 }
 
 const initialState: SearchState = {
+    query: '',
     results: [],
     loading: false,
     error: null,
@@ -41,6 +43,12 @@ const searchSlice = createSlice({
     name: 'search',
     initialState,
     reducers: {
+        setQuery: (state, action: PayloadAction<string>) => {
+            state.query = action.payload;
+        },
+        setResults: (state, action: PayloadAction<SearchResult[]>) => {
+            state.results = action.payload;
+        },
         clearResults: (state) => {
             state.results = [];
         },
@@ -63,7 +71,7 @@ const searchSlice = createSlice({
     },
 });
 
-export const { clearResults } = searchSlice.actions;
+export const { setQuery, setResults, clearResults } = searchSlice.actions;
 export const selectSearchResults = (state: { search: SearchState }) => state.search.results;
 export const selectSearchLoading = (state: { search: SearchState }) => state.search.loading;
 export const selectSearchError = (state: { search: SearchState }) => state.search.error;

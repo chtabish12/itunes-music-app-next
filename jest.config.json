@@ -1,1 +1,17 @@
-{\n  \"preset\": \"next/babel\",\n  \"testEnvironment\": \"jsdom\",\n  \"moduleNameMapper\": {\n    \"\.(css|less|scss|sass)$\": \"identity-obj-proxy\"\n  },\n  \"setupFilesAfterEnv\": [\n    \"<rootDir>/jest.setup.js\"\n  ],\n  \"collectCoverageFrom\": [\n    \"src/**/*.{js,jsx,ts,tsx}\",\n    \"!src/**/*.d.ts\"\n  ]\n}
+{
+  "testEnvironment": "jsdom",
+  "transform": {
+    "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { "presets": ["next/babel"] }]
+  },
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/$1",
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+  },
+  "setupFilesAfterEnv": [
+    "<rootDir>/jest.setup.js"
+  ],
+  "collectCoverageFrom": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/*.d.ts"
+  ]
+}

@@ -4,19 +4,27 @@ import React, { useState } from 'react';
 import { useAppDispatch } from '@/lib/redux/hooks';
 import { fetchSearchResults } from '@/lib/redux/searchSlice';
 
-export default function SearchForm() {
+interface SearchFormProps {
+  onSubmit?: (query: string) => void;
+}
+
+export default function SearchForm({ onSubmit }: SearchFormProps = {}) {
   const [query, setQuery] = useState('');
   const dispatch = useAppDispatch();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      dispatch(fetchSearchResults(query) as any);
+      if (onSubmit) {
+        onSubmit(query);
+      } else {
+        dispatch(fetchSearchResults(query));
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
+    <form onSubmit={handleSubmit} className="flex gap-2" role="form">
       <input
         type="text"
         value={query}

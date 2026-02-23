@@ -2,6 +2,7 @@ import searchReducer, { fetchSearchResults, clearResults } from '@/lib/redux/sea
 
 describe('searchSlice', () => {
     const initialState = {
+        query: '',
         results: [],
         loading: false,
         error: null,
