@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const term = searchParams.get('term');
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
 
     if (!term) {
         return NextResponse.json(
@@ -12,10 +14,9 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // iTunes API doesn't use 'entity' parameter, use 'media' instead
-        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&limit=20`;
-        
-        console.log('Fetching from iTunes API:', url);
+        // iTunes API doesn't support offset natively; fetch offset+limit and slice
+        const fetchLimit = offset + limit;
+        const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&limit=${fetchLimit}`;
         
         const response = await fetch(url, {
             headers: {
@@ -30,8 +31,9 @@ export async function GET(request: NextRequest) {
         }
 
         const data = await response.json();
-        console.log(`Found ${data.results?.length || 0} results for "${term}"`);
-        return NextResponse.json(data);
+        const results = (data.results || []).slice(offset, offset + limit);
+        console.log(`Found ${results.length} results (offset=${offset}) for "${term}"`);
+        return NextResponse.json({ results, resultCount: data.resultCount });
         
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
