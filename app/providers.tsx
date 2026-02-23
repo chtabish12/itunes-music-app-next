@@ -1,9 +1,8 @@
-import React from 'react';
+'use client';
+
 import { Provider } from 'react-redux';
-import { store } from './store'; // Adjust the import based on your store file location
+import { store } from '@/lib/redux/store';
 
-const AppProvider = ({ children }) => {
-    return <Provider store={store}>{children}</Provider>;
-};
-
-export default AppProvider;
+export default function Providers({ children }: { children: React.ReactNode }) {
+  return <Provider store={store}>{children}</Provider>;
+}

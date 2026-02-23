@@ -1,20 +1,21 @@
-import React from 'react';
-import { Provider } from 'react-redux';
-import { store } from '@/lib/redux/store';
+import type { Metadata } from 'next';
+import Providers from './providers';
 import './globals.css';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'iTunes Music App',
-  description: 'Search and discover music from iTunes',
+  description: 'Search for your favorite music, artists, and albums',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
-        <Provider store={store}>
-          {children}
-        </Provider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

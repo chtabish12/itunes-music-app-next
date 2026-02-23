@@ -33,8 +33,5 @@ The iTunes Music App Next is a modern web application that allows users to brows
    npm start
    ```
 
-### Contributing
-Contributions are welcome! Please follow the standard contribution guidelines.
-
 ### License
 This project is licensed under the MIT License. See the LICENSE file for more information.
