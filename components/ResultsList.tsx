@@ -1,50 +1,96 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import {
   selectSearchResults,
   selectSearchLoading,
-  selectSearchHasMore,
+  selectSearchError,
   selectSearchQuery,
-  selectSearchOffset,
+  selectSearchHasMore,
   fetchMoreResults,
 } from '@/lib/redux/searchSlice';
 import ResultCard from './ResultCard';
-import InfiniteScrollLoader from './InfiniteScrollLoader';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 export default function ResultsList() {
-  const dispatch = useAppDispatch();
   const results = useAppSelector(selectSearchResults);
   const loading = useAppSelector(selectSearchLoading);
-  const hasMore = useAppSelector(selectSearchHasMore);
+  const error = useAppSelector(selectSearchError);
   const query = useAppSelector(selectSearchQuery);
-  const offset = useAppSelector(selectSearchOffset);
+  const hasMore = useAppSelector(selectSearchHasMore);
+  const dispatch = useAppDispatch();
 
-  const handleLoadMore = useCallback(() => {
-    if (query && !loading && hasMore) {
-      dispatch(fetchMoreResults({ query, offset }));
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const isLoadingMore = useRef(false);
+  const lastScrollY = useRef(0);
+
+  const loadMore = useCallback(() => {
+    if (!isLoadingMore.current && hasMore && query && !loading) {
+      isLoadingMore.current = true;
+      lastScrollY.current = window.scrollY; // Save scroll position
+      
+      console.log('🔄 Triggering load more at scroll:', lastScrollY.current);
+      
+      dispatch(
+        fetchMoreResults({ 
+          query, 
+          offset: results.length 
+        }) as any
+      ).finally(() => {
+        isLoadingMore.current = false;
+        // Restore scroll position after render
+        setTimeout(() => {
+          window.scrollTo(0, lastScrollY.current);
+        }, 50);
+      });
     }
-  }, [dispatch, query, loading, hasMore, offset]);
+  }, [hasMore, query, results.length, dispatch, loading]);
 
-  const loaderRef = useInfiniteScroll({
-    onLoadMore: handleLoadMore,
-    hasMore,
-    loading,
-  });
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && hasMore && !isLoadingMore.current) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [loadMore, loading, hasMore]);
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
 
   return (
-    <div>
+    <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {results.map((result, index) => (
+        {results.map((result) => (
           <ResultCard
-            key={result.trackId ?? result.collectionId ?? `${result.trackName}-${result.artistName}-${index}`}
+            key={result.trackId || `${result.collectionId}-${Math.random()}`}
             result={result}
           />
         ))}
       </div>
-      <InfiniteScrollLoader ref={loaderRef} loading={loading} hasMore={hasMore} />
-    </div>
+
+      {/* Infinite scroll trigger */}
+      <div ref={observerTarget} className="py-8 text-center w-full">
+        {loading && (
+          <div className="text-gray-600 text-lg">⏳ Loading more results...</div>
+        )}
+        {!loading && !hasMore && results.length > 0 && (
+          <div className="text-gray-500 text-sm">✅ No more results</div>
+        )}
+      </div>
+    </>
   );
 }
