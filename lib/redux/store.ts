@@ -3,8 +3,8 @@ import searchReducer from './searchSlice';
 
 export const store = configureStore({
   reducer: {
-    search: searchReducer
-  }
+    search: searchReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

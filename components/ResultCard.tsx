@@ -26,15 +26,9 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
           className="result-card-image"
         />
       )}
-      {result.trackName && (
-        <h2 className="result-card-title">{result.trackName}</h2>
-      )}
-      {result.artistName && (
-        <p className="result-card-artist">{result.artistName}</p>
-      )}
-      {result.collectionName && (
-        <p className="result-card-collection">{result.collectionName}</p>
-      )}
+      {result.trackName && <h2 className="result-card-title">{result.trackName}</h2>}
+      {result.artistName && <p className="result-card-artist">{result.artistName}</p>}
+      {result.collectionName && <p className="result-card-collection">{result.collectionName}</p>}
       {price && <p className="result-card-price">${price.toFixed(2)}</p>}
     </div>
   );

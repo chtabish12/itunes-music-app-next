@@ -31,13 +31,13 @@ export default function ResultsList() {
     if (!isLoadingMore.current && hasMore && query && !loading) {
       isLoadingMore.current = true;
       lastScrollY.current = window.scrollY;
-      
+
       console.log('🔄 Triggering load more at scroll:', lastScrollY.current);
-      
+
       dispatch(
-        fetchMoreResults({ 
-          query, 
-          offset: results.length 
+        fetchMoreResults({
+          query,
+          offset: results.length,
         }) as any
       ).finally(() => {
         isLoadingMore.current = false;
@@ -91,11 +91,7 @@ export default function ResultsList() {
 
       {/* Infinite scroll trigger - observer target */}
       <div ref={observerTarget} className="w-full mt-8">
-        <InfiniteScrollLoader
-          isLoading={loading}
-          hasMore={hasMore}
-          totalResults={totalResults}
-        />
+        <InfiniteScrollLoader isLoading={loading} hasMore={hasMore} totalResults={totalResults} />
       </div>
     </>
   );
