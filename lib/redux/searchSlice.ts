@@ -27,7 +27,7 @@ export const fetchSearchResults = createAsyncThunk(
     'search/fetchSearchResults',
     async (query: string) => {
         const response = await fetch(
-            `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song,album,artist&limit=20`
+            `/api/search?term=${encodeURIComponent(query)}`
         );
         if (!response.ok) {
             throw new Error('Failed to fetch search results');
