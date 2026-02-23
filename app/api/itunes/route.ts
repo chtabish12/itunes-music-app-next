@@ -1,19 +1,38 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { method } = req;
-  const iTunesAPIBaseURL = 'https://itunes.apple.com';
+export async function GET(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const term = searchParams.get('term');
+    const entity = searchParams.get('entity') || 'song';
+    const limit = searchParams.get('limit') || '20';
 
-  if (method === 'GET') {
-    try {
-      const response = await fetch(`${iTunesAPIBaseURL}${req.url}`);
-      const data = await response.json();
-      res.status(response.status).json(data);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error', error });
+    if (!term) {
+        return NextResponse.json(
+            {
+                error: 'Missing search term'
+            },
+            { status: 400 }
+        );
     }
-  } else {
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${method} Not Allowed`);
-  }
+
+    try {
+        const response = await fetch(
+            `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=${entity}&limit=${limit}`
+        );
+
+        if (!response.ok) {
+            throw new Error('iTunes API request failed');
+        }
+
+        const data = await response.json();
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error('iTunes API error:', error);
+        return NextResponse.json(
+            {
+                error: 'Failed to fetch from iTunes API'
+            },
+            { status: 500 }
+        );
+    }
 }
